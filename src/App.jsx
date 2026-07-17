@@ -146,6 +146,14 @@ function App() {
     }, 700)
   }
 
+  const scrollToStyleSection = (event) => {
+    event.preventDefault()
+    document.getElementById('encuentra-tu-estilo')?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+
   if (route.pathname.startsWith('/catalogo') || route.pathname === '/admin/login') {
     return <Catalog route={route} />
   }
@@ -221,7 +229,7 @@ function App() {
           <p>Encuentra tu próxima prenda favorita</p>
 
           {/* Boton principal hacia la seccion de estilos */}
-          <a className="shop-button" href="#encuentra-tu-estilo">
+          <a className="shop-button" href="#encuentra-tu-estilo" onClick={scrollToStyleSection}>
             ¿Catalogo?
           </a>
         </div>
@@ -299,7 +307,7 @@ function App() {
                       <div className="style-card-image">
                         <img src={category.image} alt={category.title} />
                       </div>
-                      <span>{category.title}</span>
+                      <h3>{category.title}</h3>
                     </a>
                   ) : (
                     <article className="style-card" key={category.title}>

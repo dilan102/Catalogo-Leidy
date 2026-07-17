@@ -4,11 +4,10 @@ import {
   deleteProduct,
   getProductById,
   getProductsBySubsection,
-  getStoredProducts,
   isAdminAuthenticated,
-  readFilesAsDataUrls,
   saveProduct,
   setAdminSession,
+  uploadProductImages,
 } from './catalogStore'
 import './Catalog.css'
 
@@ -193,7 +192,7 @@ function ProductCard({ product, adminMode, onEdit, onDelete }) {
           <h3>{product.name}</h3>
           <p>{formatPrice(product.price)}</p>
           <div>
-            {product.sizes.slice(0, 5).map((size) => (
+            {(product.sizes || []).slice(0, 5).map((size) => (
               <span key={size}>{size}</span>
             ))}
           </div>
@@ -224,6 +223,7 @@ function ProductForm({ section, subsection, editingProduct, onCancel, onSaved })
   const [existingImages, setExistingImages] = useState(editingProduct?.images || [])
   const [newImages, setNewImages] = useState([])
   const [error, setError] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
 
   const selectedSizes = new Set(formState.sizes)
 
@@ -237,11 +237,16 @@ function ProductForm({ section, subsection, editingProduct, onCancel, onSaved })
   }
 
   const handleFiles = async (files) => {
-    const urls = await readFilesAsDataUrls(Array.from(files))
-    setNewImages(urls)
+    setError('')
+    try {
+      const urls = await uploadProductImages(Array.from(files), section.slug)
+      setNewImages(urls)
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : 'No se pudieron subir las imágenes.')
+    }
   }
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
     const images = [...existingImages, ...newImages]
 
@@ -250,22 +255,30 @@ function ProductForm({ section, subsection, editingProduct, onCancel, onSaved })
       return
     }
 
-    saveProduct({
-      id: editingProduct?.id,
-      subsectionId: subsection.id,
-      sectionSlug: section.slug,
-      subsectionSlug: subsection.slug,
-      name: formState.name,
-      description: formState.description,
-      price: formState.price,
-      images,
-      sizes: formState.sizes,
-      colors: formState.colors.split(',').map((color) => color.trim()).filter(Boolean),
-      isActive: formState.isActive,
-      isFeatured: formState.isFeatured,
-      order: formState.order,
-    })
-    onSaved()
+    setIsSaving(true)
+    setError('')
+    try {
+      await saveProduct({
+        id: editingProduct?.id,
+        subsectionId: subsection.id,
+        sectionSlug: section.slug,
+        subsectionSlug: subsection.slug,
+        name: formState.name,
+        description: formState.description,
+        price: formState.price,
+        images,
+        sizes: formState.sizes,
+        colors: formState.colors.split(',').map((color) => color.trim()).filter(Boolean),
+        isActive: formState.isActive,
+        isFeatured: formState.isFeatured,
+        order: formState.order,
+      })
+      onSaved()
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : 'No se pudo guardar el producto.')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -351,7 +364,7 @@ function ProductForm({ section, subsection, editingProduct, onCancel, onSaved })
 
         <footer>
           <button type="button" onClick={onCancel}>Cancelar</button>
-          <button type="submit">Guardar producto</button>
+          <button type="submit" disabled={isSaving}>{isSaving ? 'Guardando...' : 'Guardar producto'}</button>
         </footer>
       </form>
     </section>
@@ -362,19 +375,34 @@ function SubsectionPage({ section, subsection, adminMode }) {
   const [products, setProducts] = useState([])
   const [showForm, setShowForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [productsError, setProductsError] = useState('')
 
-  const refreshProducts = () => {
-    setProducts(getProductsBySubsection(section.slug, subsection.slug))
+  const refreshProducts = async () => {
+    setLoadingProducts(true)
+    setProductsError('')
+    try {
+      setProducts(await getProductsBySubsection(section.slug, subsection.slug))
+    } catch (error) {
+      setProducts([])
+      setProductsError(error instanceof Error ? error.message : 'No se pudieron cargar productos.')
+    } finally {
+      setLoadingProducts(false)
+    }
   }
 
   useEffect(() => {
-    refreshProducts()
+    void refreshProducts()
   }, [section.slug, subsection.slug])
 
-  const handleDelete = (product) => {
+  const handleDelete = async (product) => {
     if (!window.confirm('¿Eliminar este producto?')) return
-    deleteProduct(product.id)
-    refreshProducts()
+    try {
+      await deleteProduct(product.id)
+      await refreshProducts()
+    } catch (error) {
+      setProductsError(error instanceof Error ? error.message : 'No se pudo eliminar el producto.')
+    }
   }
 
   return (
@@ -401,6 +429,7 @@ function SubsectionPage({ section, subsection, adminMode }) {
 
       {adminMode && showForm && (
         <ProductForm
+          key={editingProduct?.id || 'new-product'}
           section={section}
           subsection={subsection}
           editingProduct={editingProduct}
@@ -411,12 +440,16 @@ function SubsectionPage({ section, subsection, adminMode }) {
           onSaved={() => {
             setShowForm(false)
             setEditingProduct(null)
-            refreshProducts()
+            void refreshProducts()
           }}
         />
       )}
 
-      {products.length > 0 ? (
+      {loadingProducts ? (
+        <p className="catalog-empty">Cargando productos...</p>
+      ) : productsError ? (
+        <p className="catalog-empty">{productsError}</p>
+      ) : products.length > 0 ? (
         <section className="catalog-product-grid">
           {products.map((product) => (
             <ProductCard
@@ -485,11 +518,51 @@ function ProductPage({ product }) {
   )
 }
 
+function ProductRoute({ productId }) {
+  const [product, setProduct] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadProduct() {
+      setLoading(true)
+      try {
+        const result = await getProductById(productId)
+        if (!cancelled) {
+          setProduct(result)
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void loadProduct()
+
+    return () => {
+      cancelled = true
+    }
+  }, [productId])
+
+  if (loading) {
+    return <main className="catalog-page"><p className="catalog-empty">Cargando producto...</p></main>
+  }
+
+  if (!product) {
+    return <main className="catalog-page"><p className="catalog-empty">Producto no encontrado.</p></main>
+  }
+
+  return <ProductPage product={product} />
+}
+
 export default function Catalog({ route }) {
   const [adminMode, setAdminMode] = useState(false)
   const [, setStoreVersion] = useState(0)
 
   useEffect(() => {
+    localStorage.removeItem('leidy_catalog_products_v1')
     setAdminMode(isAdminAuthenticated())
   }, [])
 
@@ -503,7 +576,6 @@ export default function Catalog({ route }) {
   const productId = parts[4]
   const section = catalogSections.find((item) => item.slug === sectionSlug)
   const subsection = section?.subsections.find((item) => item.slug === subsectionSlug)
-  const product = productId ? getProductById(productId) : null
 
   const handleLogout = () => {
     setAdminSession(false)
@@ -514,11 +586,10 @@ export default function Catalog({ route }) {
   return (
     <div className="catalog-shell">
       <CatalogHeader adminMode={adminMode} onLogout={handleLogout} />
-      {productId && product ? <ProductPage product={product} /> : null}
-      {productId && !product ? <main className="catalog-page"><p className="catalog-empty">Producto no encontrado.</p></main> : null}
+      {productId ? <ProductRoute productId={productId} /> : null}
       {!productId && section && subsection ? <SubsectionPage section={section} subsection={subsection} adminMode={adminMode} /> : null}
       {!productId && section && !subsection ? <SectionPage section={section} /> : null}
-      {!productId && !section ? <CatalogHome adminMode={adminMode} productsCount={getStoredProducts().length} /> : null}
+      {!productId && !section ? <CatalogHome adminMode={adminMode} /> : null}
     </div>
   )
 }
