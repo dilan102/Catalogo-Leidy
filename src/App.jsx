@@ -1,22 +1,28 @@
 import { useEffect, useRef, useState } from 'react'
 import ScrollStack, { ScrollStackItem } from './components/ScrollStack'
 import Catalog from './Catalog'
+import SiteNavbar from './components/SiteNavbar'
+import SiteFooter from './components/SiteFooter'
 import './App.css'
 
+/* Cambia de ruta sin recargar la pagina y fuerza el re-render del router artesanal. */
+function navigate(path) {
+  window.history.pushState({}, '', path)
+  window.dispatchEvent(new PopStateEvent('popstate'))
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
 
 function App() {
-  const [route, setRoute] = useState({
+  /* El navbar compartido maneja su propio estado de menu. */
+  const [activeService, setActiveService] = useState(null)
+  /* Estado local de la ruta para que los pushState se reflejen en pantalla. */
+  const [locationState, setLocationState] = useState({
     pathname: window.location.pathname,
     search: window.location.search,
   })
-
-  // Estado que controla si el menu de pantalla completa esta abierto
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [activeService, setActiveService] = useState(null)
   const serviceAnimationTimeout = useRef(null)
 
-  // Links temporales del menu; por ahora apuntan a enlaces vacios
-  const menuLinks = ['Inicio', 'Catalogo', 'Testimonios', 'Contactanos']
+  /* Servicios mostrados en la pantalla principal. */
   const services = [
     {
       id: 'destellos',
@@ -101,37 +107,41 @@ function App() {
     {
       title: 'Ropa',
       image: '/Seccion_dama.png',
-      href: '/catalogo',
+      href: '/catalogo/ropa',
     },
     {
       title: 'Piñateria',
       image: '/Seccion_piñateria.png',
+      href: '/catalogo/pinateria',
     },
     {
-      title: 'Zapateria',
+      title: 'Calzado',
       image: '/Seccion_calzado.png',
+      href: '/catalogo/calzado',
     },
     {
       title: 'Accesorios',
       image: '/Seccion_accesorios.png',
+      href: '/catalogo/accesorios',
     },
   ]
 
   useEffect(() => {
-    const handleRouteChange = () => {
-      setRoute({
+    /* Escucha navegacion interna para volver a pintar la vista correcta. */
+    const handlePopState = () => {
+      setLocationState({
         pathname: window.location.pathname,
         search: window.location.search,
       })
     }
 
-    window.addEventListener('popstate', handleRouteChange)
+    window.addEventListener('popstate', handlePopState)
 
     return () => {
-      window.removeEventListener('popstate', handleRouteChange)
       if (serviceAnimationTimeout.current) {
         clearTimeout(serviceAnimationTimeout.current)
       }
+      window.removeEventListener('popstate', handlePopState)
     }
   }, [])
 
@@ -154,67 +164,16 @@ function App() {
     })
   }
 
-  if (route.pathname.startsWith('/catalogo') || route.pathname === '/admin/login') {
-    return <Catalog route={route} />
+  if (locationState.pathname.startsWith('/catalogo') || locationState.pathname.startsWith('/admin')) {
+    return <Catalog route={locationState} />
   }
 
   return (
-    // Contenedor principal de la pagina
     <main className="site-shell">
-      {/* Navbar oscuro y compacto sobre el hero */}
-      <header className="site-navbar" aria-label="Navegación principal">
-        {/* Logo y nombre de la marca */}
-        <a className="brand" href="/" aria-label="Leidy Montañez inicio">
-          <img className="brand-logo" src="/Logo_leidy.png" alt="" />
-          <span className="brand-name">Leidy Montañez</span>
-        </a>
+      {/* Navbar compartido para toda la web. */}
+      <SiteNavbar />
 
-        {/* Acciones del navbar: catalogo/carrito y menu */}
-        <nav className="navbar-actions" aria-label="Acciones principales">
-          {/* Boton/enlace de catalogo con icono de carrito */}
-          <a className="cart-link" href="/catalogo" aria-label="Ver catálogo">
-            <svg viewBox="0 0 48 48" aria-hidden="true">
-              <path d="M7 9h6l5.4 23.5h18.5l4-15.5H17" />
-              <path d="M21 40a2.8 2.8 0 1 0 0-.1M36 40a2.8 2.8 0 1 0 0-.1" />
-            </svg>
-          </a>
-
-          {/* Boton que abre y cierra el menu de pantalla completa */}
-          <button
-            className={`menu-button ${isMenuOpen ? 'is-open' : ''}`}
-            type="button"
-            aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
-            aria-expanded={isMenuOpen}
-            aria-controls="main-menu"
-            onClick={() => setIsMenuOpen((currentState) => !currentState)}
-          >
-            <span></span>
-            <span></span>
-            <span></span>
-          </button>
-        </nav>
-      </header>
-
-      {/* Menu desplegable a pantalla completa */}
-      <aside
-        id="main-menu"
-        className={`fullscreen-menu ${isMenuOpen ? 'is-open' : ''}`}
-        aria-hidden={!isMenuOpen}
-      >
-        {/* Fondo del menu con blur suave */}
-        <div className="fullscreen-menu-bg" aria-hidden="true"></div>
-
-        {/* Lista centrada de enlaces temporales */}
-        <nav className="fullscreen-menu-nav" aria-label="Menú principal">
-          {menuLinks.map((link) => (
-            <a key={link} href="#" onClick={() => setIsMenuOpen(false)}>
-              {link}
-            </a>
-          ))}
-        </nav>
-      </aside>
-
-      {/* Hero principal inspirado en la referencia enviada */}
+      {/* Hero principal */}
       <section className="hero" aria-labelledby="hero-title">
         <div className="hero-parallax hero-bg-layer" aria-hidden="true"></div>
         <div className="hero-parallax hero-glow-layer" aria-hidden="true"></div>
@@ -302,27 +261,26 @@ function App() {
 
               <div className="style-grid">
                 {styleCategories.map((category) => (
-                  category.href ? (
-                    <a className="style-card style-card-link" href={category.href} key={category.title}>
-                      <div className="style-card-image">
-                        <img src={category.image} alt={category.title} />
-                      </div>
-                      <h3>{category.title}</h3>
-                    </a>
-                  ) : (
-                    <article className="style-card" key={category.title}>
-                      <div className="style-card-image">
-                        <img src={category.image} alt={category.title} />
-                      </div>
-                      <h3>{category.title}</h3>
-                    </article>
-                  )
+                  <button
+                    type="button"
+                    className="style-card style-card-link"
+                    key={category.title}
+                    onClick={() => navigate(category.href)}
+                  >
+                    <div className="style-card-image">
+                      <img src={category.image} alt={category.title} />
+                    </div>
+                    <h3>{category.title}</h3>
+                  </button>
                 ))}
               </div>
             </section>
           </ScrollStackItem>
         </ScrollStack>
       </div>
+
+      {/* Footer compartido para cerrar la pagina principal con la misma estetica del catalogo. */}
+      <SiteFooter />
     </main>
   )
 }

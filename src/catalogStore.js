@@ -1,5 +1,11 @@
 import { createClient } from './lib/supabase/client.js'
-import { catalogSections, createProduct } from './catalogData'
+import {
+  catalogSections,
+  createProduct,
+  flatSections,
+  getDefaultFlatSubsection,
+  isFlatCatalogSection,
+} from './catalogData'
 
 const SESSION_KEY = 'leidy_catalog_admin_session_v1'
 const IMAGE_BUCKET = 'product-images'
@@ -28,6 +34,8 @@ function normalizeProduct(product, fallback = {}) {
     name: product.name || '',
     description: product.description || '',
     price: product.price || 0,
+    tag: product.tag || product.product_tag || '',
+    quantityAvailable: product.quantity_available ?? product.quantityAvailable ?? 0,
     images: product.images || [],
     sizes: product.sizes || [],
     colors: product.colors || [],
@@ -138,6 +146,71 @@ export async function ensureCatalogStructure() {
         }
       }
     }
+
+    for (const section of flatSections) {
+      let { data: dbSection, error: sectionError } = await supabase
+        .from('sections')
+        .select('id')
+        .eq('slug', section.slug)
+        .maybeSingle()
+
+      if (sectionError) {
+        throw new Error(`No se pudo revisar la sección "${section.name}": ${sectionError.message}`)
+      }
+
+      if (!dbSection) {
+        const { data: insertedSection, error: insertSectionError } = await supabase
+          .from('sections')
+          .insert({
+            name: section.name,
+            slug: section.slug,
+            description: section.description,
+            image_url: section.image || null,
+            order: 100 + flatSections.findIndex((item) => item.slug === section.slug),
+            is_active: true,
+          })
+          .select('id')
+          .single()
+
+        if (insertSectionError) {
+          throw new Error(`No se pudo crear la sección "${section.name}": ${insertSectionError.message}`)
+        }
+
+        dbSection = insertedSection
+      }
+
+      const defaultSubsection = section.defaultSubsection
+      if (!defaultSubsection) continue
+
+      const { data: dbSubsection, error: subsectionError } = await supabase
+        .from('subsections')
+        .select('id')
+        .eq('section_id', dbSection.id)
+        .eq('slug', defaultSubsection.slug)
+        .maybeSingle()
+
+      if (subsectionError) {
+        throw new Error(`No se pudo revisar la subsección "${defaultSubsection.name}": ${subsectionError.message}`)
+      }
+
+      if (!dbSubsection) {
+        const { error: insertSubsectionError } = await supabase
+          .from('subsections')
+          .insert({
+            section_id: dbSection.id,
+            name: defaultSubsection.name,
+            slug: defaultSubsection.slug,
+            description: defaultSubsection.description,
+            image_url: null,
+            order: 0,
+            is_active: true,
+          })
+
+        if (insertSubsectionError) {
+          throw new Error(`No se pudo crear la subsección "${defaultSubsection.name}": ${insertSubsectionError.message}`)
+        }
+      }
+    }
   })()
 
   try {
@@ -169,7 +242,8 @@ export async function getStoredProducts() {
 
 export async function saveProduct(productInput) {
   const product = createProduct(productInput)
-  const subsection = await getSubsectionRecord(product.sectionSlug, product.subsectionSlug)
+  const subsectionSlug = product.subsectionSlug || getDefaultFlatSubsection(product.sectionSlug)?.slug
+  const subsection = await getSubsectionRecord(product.sectionSlug, subsectionSlug)
   const supabase = getSupabase()
 
   const payload = {
@@ -177,6 +251,8 @@ export async function saveProduct(productInput) {
     name: product.name,
     description: product.description || null,
     price: product.price || null,
+    tag: product.tag || null,
+    quantity_available: product.quantityAvailable ?? null,
     images: product.images || [],
     sizes: product.sizes || [],
     colors: product.colors || [],
@@ -226,6 +302,13 @@ export async function getProductsBySubsection(sectionSlug, subsectionSlug) {
   }
 
   return (data || []).map((product) => normalizeProduct(product, { sectionSlug, subsectionSlug }))
+}
+
+/* Carga los productos de una seccion plana usando su subseccion oculta general. */
+export async function getProductsBySection(sectionSlug) {
+  const flatSection = isFlatCatalogSection(sectionSlug) ? getDefaultFlatSubsection(sectionSlug) : null
+  const subsectionSlug = flatSection?.slug || 'general'
+  return getProductsBySubsection(sectionSlug, subsectionSlug)
 }
 
 export async function getProductById(productId) {
