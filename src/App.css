@@ -1,0 +1,934 @@
+/* Fuentes usadas para el menu y el estilo editorial del hero */
+@import url('https://fonts.googleapis.com/css2?family=Kameron:wght@400..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+
+/* Contenedor general de la pagina */
+.site-shell {
+  position: relative;
+  min-height: 100svh;
+  background: #000;
+}
+
+/* Navbar superior oscuro y compacto */
+.site-navbar {
+  position: fixed;
+  top: clamp(12px, 2vw, 22px);
+  right: clamp(14px, 3vw, 42px);
+  left: clamp(14px, 3vw, 42px);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 58px;
+  padding: 8px clamp(14px, 2vw, 24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(5, 4, 4, 0.78);
+  box-shadow:
+    0 18px 46px rgba(0, 0, 0, 0.34),
+    inset 0 0 0 1px rgba(139, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
+}
+
+/* Elementos flexibles del navbar */
+.brand,
+.navbar-actions,
+.cart-link,
+.menu-button {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Enlace de marca del navbar */
+.brand {
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Logo circular de la marca */
+.brand-logo {
+  width: 38px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 18px rgba(170, 0, 0, 0.24);
+}
+
+/* Nombre de la marca en el navbar */
+.brand-name {
+  color: rgba(255, 248, 242, 0.9);
+  font-family: "Playfair Display", serif;
+  font-size: clamp(1.05rem, 2vw, 1.45rem);
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 0 0 14px rgba(160, 0, 0, 0.34);
+}
+
+/* Grupo de acciones del navbar */
+.navbar-actions {
+  gap: clamp(14px, 2vw, 26px);
+}
+
+/* Icono de catalogo/carrito del navbar */
+.cart-link {
+  width: 31px;
+  color: #d85b52;
+  text-decoration: none;
+}
+
+/* Trazos del icono de carrito */
+.cart-link svg {
+  width: 100%;
+  height: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 8px rgba(218, 24, 20, 0.54));
+  transition:
+    color 0.25s ease,
+    filter 0.25s ease,
+    transform 0.25s ease;
+}
+
+/* Estado interactivo del carrito */
+.cart-link:hover svg,
+.cart-link:focus-visible svg {
+  color: #ff554a;
+  filter: drop-shadow(0 0 14px rgba(255, 55, 45, 0.82));
+  transform: translateY(-2px);
+}
+
+/* Boton circular que abre el menu */
+.menu-button {
+  position: relative;
+  z-index: 45;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  width: 42px;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 1px solid rgba(210, 68, 58, 0.7);
+  border-radius: 50%;
+  color: #e45a50;
+  background: rgba(18, 12, 12, 0.64);
+  box-shadow:
+    inset 0 0 14px rgba(214, 21, 15, 0.1),
+    0 0 14px rgba(214, 21, 15, 0.18);
+  cursor: pointer;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+/* Lineas internas del boton de menu */
+.menu-button span {
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  box-shadow: 0 0 8px rgba(218, 24, 20, 0.75);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+/* Estado interactivo del boton de menu */
+.menu-button:hover,
+.menu-button:focus-visible {
+  border-color: rgba(255, 75, 64, 0.95);
+  color: #ff5c52;
+  box-shadow:
+    inset 0 0 18px rgba(214, 21, 15, 0.18),
+    0 0 24px rgba(255, 45, 35, 0.36);
+  transform: translateY(-2px);
+}
+
+/* Primera linea transformada cuando el menu esta abierto */
+.menu-button.is-open span:first-child {
+  transform: translateY(6px) rotate(45deg);
+}
+
+/* Linea central oculta cuando el menu esta abierto */
+.menu-button.is-open span:nth-child(2) {
+  opacity: 0;
+}
+
+/* Ultima linea transformada cuando el menu esta abierto */
+.menu-button.is-open span:last-child {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* Capa de menu a pantalla completa */
+.fullscreen-menu {
+  position: fixed;
+  z-index: 25;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: clamp(86px, 12vh, 130px) 24px 48px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 0.34s ease,
+    visibility 0.34s ease;
+}
+
+/* Menu visible cuando se activa desde el boton */
+.fullscreen-menu.is-open {
+  pointer-events: auto;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Imagen de fondo del menu con blur suave */
+.fullscreen-menu-bg {
+  position: absolute;
+  inset: -18px;
+  z-index: -2;
+  background:
+    linear-gradient(180deg, rgba(152, 11, 11, 0.4), rgba(2, 2, 2, 0.5)),
+    url('/Fondo_Menu.png') center / cover no-repeat;
+  filter: blur(6px);
+  transform: scale(1.02);
+}
+
+/* Velo claro para mantener legible la tipografia oscura */
+.fullscreen-menu::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(34, 32, 31, 0.28);
+}
+
+/* Lista central de enlaces del menu */
+.fullscreen-menu-nav {
+  display: grid;
+  justify-items: center;
+  gap: clamp(18px, 4vh, 34px);
+  text-align: center;
+}
+
+/* Enlaces grandes con la fuente Kameron */
+.fullscreen-menu-nav a {
+  color: #1b0b08;
+  font-family: 'Kameron', Georgia, 'Times New Roman', serif;
+  font-size: clamp(1rem, 4vw, 4rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: 0;
+  text-decoration: none;
+  text-shadow:
+    0 2px 18px rgba(167, 165, 162, 0.4),
+    0 0 1px rgba(0, 0, 0, 0.2);
+  transform: translateY(20px);
+  opacity: 0;
+  transition:
+    color 0.25s ease,
+    opacity 0.34s ease,
+    text-shadow 0.25s ease,
+    transform 0.34s ease;
+}
+
+/* Entrada animada de los links al abrir el menu */
+.fullscreen-menu.is-open .fullscreen-menu-nav a {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Estado interactivo de los enlaces del menu */
+.fullscreen-menu-nav a:hover,
+.fullscreen-menu-nav a:focus-visible {
+  color: #5b0806;
+  text-shadow:
+    0 0 18px rgba(255, 210, 196, 0.7),
+    0 3px 16px rgba(80, 0, 0, 0.24);
+    transform: translateY(-10px);
+    animation: 0.2s ease;
+}
+
+/* Hero principal con la nueva imagen de fondo */
+.hero {
+  position: relative;
+  isolate: isolate;
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  overflow: hidden;
+  padding: clamp(32px, 6vw, 76px);
+  color: #fff;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.26), rgba(0, 0, 0, 0.48)),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.28), rgba(100, 0, 0, 0.12), rgba(0, 0, 0, 0.36)),
+    url('/Nuevo_hero.png') center / cover no-repeat,
+    #000;
+}
+
+/* Velo oscuro para que el texto conserve contraste sobre el rojo */
+.hero::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.1), transparent 18%),
+    linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
+}
+
+/* Sombra inferior que sustituye los corazones de la referencia */
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  height: 28%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.94));
+}
+
+/* Bloque de texto centrado como en la imagen de inspiracion */
+.hero-copy {
+  position: relative;
+  z-index: 5;
+  display: grid;
+  justify-items: center;
+  width: min(100%, 980px);
+  margin-top: clamp(-86px, -6vw, -38px);
+  text-align: center;
+}
+
+/* Titulo principal del hero */
+.hero h1 {
+  margin: 0;
+  color: #fffaf4;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(2.25rem, 5.2vw, 5.15rem);
+  font-weight: 400;
+  line-height: 1.05;
+  text-wrap: balance;
+  text-shadow:
+    0 3px 18px rgba(0, 0, 0, 0.86),
+    0 0 12px rgba(120, 0, 0, 0.4);
+  cursor: default;
+}
+
+/* Subtitulo del hero */
+.hero p {
+  margin: clamp(16px, 2vw, 28px) 0 0;
+  color: rgba(255, 255, 255, 0.94);
+  font-family: "Dancing Script", cursive;
+  font-size: clamp(1.5rem, 3vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: default;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+/* Boton principal blanco, compacto y elegante */
+.shop-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 138px;
+  min-height: 54px;
+  margin-top: clamp(24px, 3.2vw, 40px);
+  padding: 0 28px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 4px;
+  color: #111;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.96rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 16px 38px rgba(0, 0, 0, 0.34),
+    0 0 22px rgba(158, 0, 0, 0.24);
+  transition:
+    color 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+/* Estado interactivo del boton principal */
+.shop-button:hover,
+.shop-button:focus-visible {
+  border-color: rgba(255, 68, 56, 0.98);
+  color: #fff;
+  background: #8d0505;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.42),
+    0 0 28px rgba(255, 45, 35, 0.48);
+  transform: translateY(-4px);
+}
+
+/* Fondo principal del body bajo el hero */
+.body-content {
+  position: relative;
+  overflow: hidden;
+  color: #f7eee9;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(154, 0, 0, 0.32), transparent 34%),
+    radial-gradient(circle at 78% 18%, rgba(255, 44, 34, 0.14), transparent 28%),
+    linear-gradient(180deg, rgba(5, 3, 3, 0.88) 0%, rgba(17, 3, 3, 0.78) 48%, rgba(4, 2, 2, 0.92) 100%),
+    url('/Fondo_body.png') center top / cover no-repeat,
+    #050303;
+}
+
+/* Brillo rojo sutil para integrar el body con el hero */
+.body-content::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 58, 45, 0.08), transparent),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.26), transparent 28%);
+}
+
+.page-scroll-stack.scroll-stack-scroller {
+  height: auto;
+  overflow: visible;
+  overscroll-behavior: auto;
+  width: 100%;
+}
+
+.page-scroll-stack .scroll-stack-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 0 8rem;
+}
+
+.page-stack-card.scroll-stack-card {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 100svh;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(145deg, rgba(30, 7, 7, 0.94), rgba(5, 2, 2, 0.96)),
+    rgba(8, 2, 2, 0.96);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.045),
+    inset 0 0 48px rgba(160, 0, 0, 0.12);
+}
+
+.page-stack-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 72, 58, 0.16), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), transparent 28%);
+}
+
+.style-stack-card.scroll-stack-card {
+  min-height: 100svh;
+}
+
+/* Secciones oscuras bajo el hero */
+.services-section,
+.style-section,
+.how-section {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  width: min(100%, 1280px);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: clamp(84px, 9vw, 120px) clamp(18px, 5vw, 72px);
+}
+
+.style-section {
+  display: grid;
+  justify-items: center;
+  scroll-margin-top: 92px;
+  padding-top: clamp(40px, 6vw, 78px);
+  text-align: center;
+}
+
+.how-section {
+  padding-top: clamp(36px, 5vw, 70px);
+}
+
+.how-card{
+  transition: 0.5s ease;
+}
+
+.how-card:hover{
+  transform: translateY(-10px);
+  transition: 0.3s ease;
+  border-color: #8d0505;
+}
+
+/* Titulo visible de las secciones bajo el hero */
+.services-section h2,
+.style-section h2,
+.how-section h2 {
+  position: relative;
+  z-index: 1;
+  margin: 0 0 clamp(34px, 5vw, 58px);
+  color: #fff8f2;
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.2rem, 5vw, 4.5rem);
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 0 22px rgba(180, 0, 0, 0.38);
+}
+
+.style-section h2 {
+  margin-bottom: 18px;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(2.05rem, 4vw, 3.6rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.08;
+  text-transform: uppercase;
+}
+
+.section-kicker {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  margin-bottom: 18px;
+  color: #d7a17b;
+  font-size: 1.1rem;
+  line-height: 1;
+  text-shadow: 0 0 14px rgba(255, 120, 92, 0.5);
+}
+
+.style-section > p {
+  position: relative;
+  z-index: 1;
+  max-width: 640px;
+  margin: 0;
+  color: rgba(255, 236, 229, 0.82);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(0.98rem, 1.4vw, 1.08rem);
+  font-weight: 600;
+  line-height: 1.55;
+  text-wrap: balance;
+}
+
+/* Grilla responsiva para los servicios */
+.services-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(18px, 2.2vw, 28px);
+  width: min(100%, 1120px);
+  margin: 0 auto;
+}
+
+/* Grilla de categorias con tarjetas tipo coleccion */
+.style-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(18px, 2.2vw, 28px);
+  width: min(100%, 1120px);
+  margin: clamp(42px, 6vw, 62px) auto 0;
+}
+
+.style-card {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 64px;
+  overflow: hidden;
+  min-height: 365px;
+  border: 1px solid rgba(255, 166, 136, 0.2);
+  border-radius: 8px;
+  background: #120404;
+  box-shadow:
+    0 18px 34px rgba(0, 0, 0, 0.36),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.style-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.style-card-image {
+  overflow: hidden;
+  min-height: 0;
+  background: rgba(255, 231, 222, 0.08);
+}
+
+.style-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1);
+  transition: transform 0.35s ease;
+}
+
+.style-card:hover img,
+.style-card:focus-within img {
+  transform: scale(1.1);
+}
+
+.style-card h3,
+.style-card span {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  margin: 0;
+  padding: 0 14px;
+  color: #fff7f1;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(1rem, 1.55vw, 1.28rem);
+  font-weight: 900;
+  line-height: 1.15;
+  text-align: center;
+  text-decoration: none;
+  background:
+    linear-gradient(180deg, rgba(42, 5, 5, 0.96), rgba(8, 1, 1, 0.98)),
+    #080101;
+  text-shadow:
+    0 1px 9px rgba(0, 0, 0, 0.82),
+    0 0 14px rgba(255, 71, 58, 0.28);
+}
+
+/* Bloque individual de cada servicio */
+.service-item {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  min-height: 238px;
+  padding: clamp(22px, 3vw, 34px) clamp(14px, 2vw, 24px);
+  text-align: center;
+}
+
+/* Boton de servicio sin fondo: solamente muestra el dibujo */
+.service-button {
+  display: inline-grid;
+  place-items: center;
+  width: 72px;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  color: #f15a50;
+  background: transparent;
+  cursor: pointer;
+  filter:
+    drop-shadow(0 0 10px rgba(255, 50, 38, 0.34))
+    drop-shadow(0 6px 14px rgba(0, 0, 0, 0.32));
+  transform-origin: center;
+  transition:
+    color 0.25s ease,
+    filter 0.25s ease,
+    transform 0.25s ease;
+}
+
+/* Iconos lineales de los botones de servicios */
+.service-button svg {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+
+/* Expansion temporal activada por click o toque */
+.service-button.is-active {
+  color: #fff7f2;
+  filter:
+    drop-shadow(0 0 18px rgba(255, 70, 58, 0.86))
+    drop-shadow(0 0 32px rgba(157, 0, 0, 0.52));
+  transform: scale(1.28);
+}
+
+/* Titulo corto de cada servicio */
+.service-item h3 {
+  margin: 18px 0 0;
+  color: #fff9f4;
+  font-family: 'Kameron', Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.35rem, 2vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+/* Texto descriptivo de cada servicio */
+.service-item p {
+  max-width: 22ch;
+  margin: 14px 0 0;
+  color: rgba(255, 232, 225, 0.74);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.42;
+}
+
+/* Link subrayado hacia WhatsApp dentro de la descripcion */
+.service-item a {
+  color: #fff3ef;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 81, 70, 0.95);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  transition:
+    color 0.25s ease,
+    text-decoration-color 0.25s ease;
+}
+
+/* Estado interactivo del link de WhatsApp */
+.service-item a:hover,
+.service-item a:focus-visible {
+  color: #ff6a60;
+  text-decoration-color: currentColor;
+}
+
+/* Grilla horizontal del paso a paso */
+.how-grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(18px, 2.2vw, 28px);
+  width: min(100%, 1120px);
+  margin: 0 auto;
+}
+
+/* Tarjetas del paso a paso */
+.how-card {
+  display: grid;
+  align-content: start;
+  min-height: 230px;
+  padding: clamp(24px, 3vw, 34px) clamp(16px, 2vw, 24px);
+  border: 1px solid rgba(255, 86, 74, 0.22);
+  border-radius: 6px;
+  text-align: center;
+  background:
+    linear-gradient(180deg, rgba(20, 6, 6, 0.68), rgba(5, 2, 2, 0.46)),
+    rgba(0, 0, 0, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 18px 34px rgba(0, 0, 0, 0.22);
+}
+
+/* Numero editorial de cada paso */
+.how-number {
+  color: #f15a50;
+  font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.35rem, 4vw, 3.6rem);
+  font-weight: 700;
+  line-height: 0.9;
+  text-shadow: 0 0 18px rgba(255, 54, 44, 0.38);
+}
+
+/* Titulo corto de cada paso */
+.how-card h3 {
+  margin: 22px 0 0;
+  color: #fff9f4;
+  font-family: 'Kameron', Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.28rem, 1.8vw, 1.58rem);
+  font-weight: 700;
+  line-height: 1.08;
+}
+
+/* Descripcion de cada paso */
+.how-card p {
+  max-width: 24ch;
+  margin: 14px auto 0;
+  color: rgba(255, 232, 225, 0.76);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.42;
+}
+
+/* Ajustes para pantallas pequenas */
+@media (max-width: 760px) {
+  /* Hero movil con imagen vertical especifica */
+  .hero {
+    min-height: 100svh;
+    padding-inline: 20px;
+    background:
+      linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.5)),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.26), rgba(100, 0, 0, 0.08), rgba(0, 0, 0, 0.24)),
+      url('/Fondo_hero_movil.png') center top / cover no-repeat,
+      #000;
+  }
+
+  /* Navbar mas compacto en movil */
+  .site-navbar {
+    min-height: 52px;
+    padding: 7px 12px;
+  }
+
+  /* Logo reducido en movil */
+  .brand-logo {
+    width: 34px;
+  }
+
+  /* Nombre de marca mas corto visualmente en movil */
+  .brand-name {
+    max-width: 150px;
+    font-size: 1rem;
+  }
+
+  /* Acciones mas juntas en movil */
+  .navbar-actions {
+    gap: 12px;
+  }
+
+  /* Icono de carrito reducido en movil */
+  .cart-link {
+    width: 28px;
+  }
+
+  /* Boton de menu reducido en movil */
+  .menu-button {
+    width: 38px;
+  }
+
+  /* Texto mas alto para no competir con la silueta del fondo movil */
+  .hero-copy {
+    margin-top: -28svh;
+  }
+
+  /* Fondo del menu cambiado por la version vertical para celular */
+  .fullscreen-menu-bg {
+    inset: -14px;
+    background:
+      linear-gradient(180deg, rgba(7, 6, 6, 0.22), rgba(2, 2, 2, 0.42)),
+      url('/Fondo_menu_movil.png') center top / cover no-repeat;
+    filter: blur(4px);
+  }
+
+  /* Velo del menu movil un poco mas claro para leer los links oscuros */
+  .fullscreen-menu::after {
+    background: rgba(255, 224, 212, 0.24);
+  }
+
+  /* Links del menu con separacion respirable en movil */
+  .fullscreen-menu-nav {
+    gap: 18px;
+  }
+
+  /* Fondo vertical del body bajo el hero en movil */
+  .body-content {
+    overflow: visible;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(154, 0, 0, 0.3), transparent 34%),
+      radial-gradient(circle at 78% 18%, rgba(255, 44, 34, 0.12), transparent 28%),
+      linear-gradient(180deg, rgba(5, 3, 3, 0.82) 0%, rgba(17, 3, 3, 0.74) 48%, rgba(4, 2, 2, 0.88) 100%),
+      url('/Fondo_body_movil.png') center top / cover no-repeat,
+      #050303;
+  }
+
+  .page-scroll-stack .scroll-stack-inner {
+    padding: 0 0 4rem;
+  }
+
+  .page-stack-card.scroll-stack-card,
+  .style-stack-card.scroll-stack-card {
+    min-height: 100svh;
+    overflow: visible;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  .services-section,
+  .style-section,
+  .how-section {
+    min-height: 100svh;
+    height: auto;
+    padding: 78px 14px 52px;
+  }
+
+  /* Grilla de servicios en dos columnas para movil */
+  .services-grid,
+  .style-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .style-card {
+    min-height: 320px;
+  }
+
+  /* Tarjetas de servicios mas compactas en movil */
+  .service-item {
+    min-height: 220px;
+    padding: 24px 14px;
+  }
+
+  /* Iconos de servicios reducidos en movil */
+  .service-button {
+    width: 62px;
+  }
+
+  /* Paso a paso vertical en movil */
+  .how-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .how-card {
+    min-height: auto;
+    padding: 24px 18px;
+  }
+}
+
+/* Ajustes para pantallas muy pequenas */
+@media (max-width: 420px) {
+  /* Imagen movil centrada en pantallas muy estrechas */
+  .hero {
+    background-position: center top;
+  }
+
+  /* Texto del hero ajustado para telefonos pequenos */
+  .hero-copy {
+    margin-top: -30svh;
+  }
+
+  /* Servicios en una columna en pantallas muy estrechas */
+  .services-grid,
+  .style-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-scroll-stack .scroll-stack-inner {
+    padding-inline: 0;
+  }
+
+  .style-card {
+    grid-template-rows: 300px 62px;
+    min-height: auto;
+  }
+}
